@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Optional
 from playwright.sync_api import sync_playwright, TimeoutError as PwTimeout
-from playwright_stealth import stealth_sync
+from playwright_stealth import stealth
 
 logger = logging.getLogger(__name__)
 
@@ -296,7 +296,13 @@ def search_items(
     items = []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                '--disable-blink-features=AutomationControlled',
+                '--disable-infobars',
+            ]
+        )
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
             user_agent=(
@@ -307,7 +313,7 @@ def search_items(
             locale="es-ES",
         )
         page = context.new_page()
-        stealth_sync(page)
+        stealth(page)
 
         try:
             # Navegar a la página de búsqueda
