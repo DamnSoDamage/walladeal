@@ -296,7 +296,7 @@ def search_items(
     items = []
     stealth = Stealth()
 
-    with sync_playwright() as p, stealth.use_sync(p) as p:
+    with stealth.use_sync(sync_playwright()) as p:
         browser = p.chromium.launch(
             headless=True,
             args=[
