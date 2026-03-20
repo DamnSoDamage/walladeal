@@ -10,6 +10,7 @@ import json
 import logging
 from typing import Optional
 from playwright.sync_api import sync_playwright, TimeoutError as PwTimeout
+from playwright_stealth import stealth_sync
 
 logger = logging.getLogger(__name__)
 
@@ -306,6 +307,7 @@ def search_items(
             locale="es-ES",
         )
         page = context.new_page()
+        stealth_sync(page)
 
         try:
             # Navegar a la página de búsqueda
@@ -344,8 +346,17 @@ def search_items(
 
             logger.info(f"📦 {len(items)} artículos encontrados")
 
+            if not items:
+                # Tomar captura para depurar por qué no cargó nada
+                page.screenshot(path="debug_wallapop.png")
+                logger.info("📸 Captura de pantalla guardada en debug_wallapop.png")
+
         except Exception as e:
             logger.error(f"❌ Error durante el scraping: {e}")
+            try:
+                page.screenshot(path="debug_wallapop.png")
+            except:
+                pass
         finally:
             browser.close()
 
