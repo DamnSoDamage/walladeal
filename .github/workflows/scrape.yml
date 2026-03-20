@@ -24,7 +24,8 @@ jobs:
 
       - name: 📦 Instalar dependencias
         run: |
-          pip install -r requirements.txt
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir --force-reinstall setuptools
           playwright install chromium --with-deps
 
       - name: 📂 Restaurar estado (seen_items.json)
