@@ -1,0 +1,68 @@
+name: "🔍 WallaDeal Scraper"
+
+on:
+  schedule:
+    # Ejecutar cada 10 minutos
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # Permite ejecución manual desde la UI
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 📦 Instalar dependencias
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir --force-reinstall setuptools
+          playwright install chromium --with-deps
+
+      - name: 📂 Restaurar estado (seen_items.json)
+        run: |
+          # Intentar recuperar seen_items.json del branch de datos
+          git fetch origin data-store --depth=1 2>/dev/null || true
+          git checkout origin/data-store -- seen_items.json 2>/dev/null || echo '{}' > seen_items.json
+          echo "📂 Estado actual:"
+          wc -c seen_items.json
+
+      - name: 🔍 Ejecutar WallaDeal
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_SERVER: ${{ secrets.NTFY_SERVER }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WALLADEAL_SEARCHES: ${{ secrets.WALLADEAL_SEARCHES }}
+          LOG_LEVEL: "INFO"
+        run: python main.py
+
+      - name: 📸 Subir captura de error (si existe)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: debug-screenshot
+          path: debug_wallapop.png
+          retention-days: 1
+
+      - name: 💾 Guardar estado (seen_items.json)
+        run: |
+          git config user.name "WallaDeal Bot"
+          git config user.email "walladeal-bot@users.noreply.github.com"
+          
+          # Crear o cambiar a branch data-store
+          git checkout --orphan data-store 2>/dev/null || git checkout data-store 2>/dev/null || git checkout -b data-store
+          
+          # Guardar solo seen_items.json en este branch
+          git add -f seen_items.json
+          git commit -m "🔄 Actualizar seen_items.json [$(date -u +%Y-%m-%dT%H:%M:%SZ)]" --allow-empty
+          git push origin data-store --force

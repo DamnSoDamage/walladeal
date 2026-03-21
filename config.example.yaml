@@ -1,0 +1,60 @@
+# ============================================================
+# WallaDeal — Configuración
+# ============================================================
+# Copia este archivo como config.yaml y personalízalo.
+# Los valores también se pueden sobreescribir con variables
+# de entorno (útil para GitHub Actions secrets).
+
+# ─────────────── BÚSQUEDAS ───────────────
+# Puedes definir varias búsquedas, cada una con sus propios filtros.
+searches:
+  - name: "Nintendo Switch"
+    keywords: ["nintendo", "switch"]        # Al menos una debe aparecer en el título
+    excluded_keywords: ["funda", "carcasa"]  # Excluir si contienen estas palabras
+    min_price: 50
+    max_price: 180
+    latitude: 40.4168       # Madrid centro
+    longitude: -3.7038
+    distance: 50000         # Radio en metros (50km)
+    # category_ids: ""      # Opcional: IDs de categorías separados por coma
+
+  # - name: "iPad"
+  #   keywords: ["ipad"]
+  #   excluded_keywords: ["funda", "cristal"]
+  #   min_price: 100
+  #   max_price: 300
+  #   latitude: 40.4168
+  #   longitude: -3.7038
+  #   distance: 30000
+
+# ─────────────── NOTIFICACIONES ───────────────
+notifications:
+  # ── ntfy (recomendado, 0 setup) ──
+  # 1. Instala la app "ntfy" en tu móvil (Android/iOS)
+  # 2. Suscríbete al topic que pongas aquí
+  # 3. ¡Listo! Ya recibes notificaciones
+  ntfy:
+    enabled: true
+    topic: "walladeal-tuuser-secreto"     # Pon algo único y secreto
+    server: "https://ntfy.sh"             # O tu servidor self-hosted
+
+  # ── Telegram ──
+  # 1. Habla con @BotFather para crear un bot
+  # 2. Copia el token
+  # 3. Envía un mensaje a tu bot y obtén tu chat_id
+  telegram:
+    enabled: false
+    bot_token: ""       # Ej: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+    chat_id: ""         # Ej: "123456789"
+
+# ─────────────── AVANZADO ───────────────
+settings:
+  # Archivo donde se guardan los IDs de artículos ya vistos
+  seen_file: "seen_items.json"
+  
+  # Nivel de log: DEBUG, INFO, WARNING, ERROR
+  log_level: "INFO"
+  
+  # En la primera ejecución, ¿enviar notificación de todos los artículos?
+  # false = solo guarda los IDs sin notificar (recomendado para no spamear)
+  notify_on_first_run: false
